@@ -1,5 +1,5 @@
 from distutils.core import setup
-import sys
+import bukget
 
 setup(
     name='pyBukGet',
@@ -8,8 +8,8 @@ setup(
     author='Steven McGrath',
     author_email='steve@chigeek.com',
     url='https://github.com/BukGet/bukget',
-    packages=['bukgetapi'],
-    classifiers=[
+    py_modules=['bukget'],
+    classifiers= [
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Information Technology',
         'License :: OSI Approved :: GNU Lesser General Public License v2 (LGPLv2)',

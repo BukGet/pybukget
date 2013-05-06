@@ -3,12 +3,12 @@ import bukget
 
 setup(
     name='pyBukGet',
-    version='1.0',
+    version='1.1',
     description='Python Module for the BukGet JSON API',
     author='Steven McGrath',
     author_email='steve@chigeek.com',
     url='https://github.com/BukGet/bukget',
-    py_modules=['bukget'],
+    packages=['pybukget'],
     classifiers= [
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Information Technology',

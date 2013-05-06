@@ -1,6 +1,11 @@
 import json
-import urllib
-import urllib2
+try:
+    from urllib import urlencode
+    from urllib2 import urlopen, Request
+except ImportError:
+    from urllib.request import urlopen, Request
+    from urllib.parse import urlencode
+    
 
 __author__ = 'Steven McGrath'
 __version__ = '1.0.0'
@@ -31,11 +36,11 @@ def _request(url, data=None, headers={}, query={}):
 
     # Lastly, if there is anything in the data variable, then urlencode it.
     if data is not None:
-        data = urllib.urlencode(data)
+        data = urlencode(data)
 
     # Time to set the User-Agent string and actually query the API!
     headers['User-Agent'] = USER_AGENT
-    return urllib2.urlopen(urllib2.Request(BASE + url, data, headers)).read()
+    return urlopen(Request(BASE + url, data, headers)).read().decode("utf-8")
 
 
 def plugins(server='', **query):

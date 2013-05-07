@@ -113,7 +113,7 @@ def category_plugins(category, server=None, **query):
 def search(*filters, **query):
     '''Searching the API.
     This function is only utilizing the POST searching and is expecting properly
-    formatted search dictionaries.  Also all fo the same query variables as is
+    formatted search dictionaries.  Also all of the same query variables as is
     described in the API3 docs will work here as well.
     '''
     query['filters'] = json.dumps(filters)

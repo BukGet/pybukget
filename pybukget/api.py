@@ -40,8 +40,6 @@ def _request(url, data=None, headers={}, query={}):
 
     # Time to set the User-Agent string and actually query the API!
     headers['User-Agent'] = USER_AGENT
-    print(BASE + url)
-    print(query)
     return urlopen(Request(BASE + url, data, headers)).read().decode("utf-8")
 
 def _ensure_slug(query):

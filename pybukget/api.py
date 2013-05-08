@@ -27,7 +27,7 @@ def _request(url, data=None, headers={}, query={}):
 
     # Here we will collapse the fields list if we see it into a string as is
     # expected by the API.
-    if 'fields' in query:
+    if 'fields' in query and ' ' in query['fields']:
         query['fields'] = ','.join(query['fields'])
 
     # Append the query to the URL if we have anything in the query dictionary.
@@ -40,8 +40,22 @@ def _request(url, data=None, headers={}, query={}):
 
     # Time to set the User-Agent string and actually query the API!
     headers['User-Agent'] = USER_AGENT
+    print(BASE + url)
+    print(query)
     return urlopen(Request(BASE + url, data, headers)).read().decode("utf-8")
 
+def _ensure_slug(query):
+    ''' Ensure that the fields contains slug.
+    '''
+    if hasattr(query, 'fields'):
+        if query['fields'].startswith('-'):
+            if '-slug,' in query['fields']:
+                query['fields'] = query['fields'].replace('-slug,', '')
+            elif '-slug' in query['fields']:
+                query['fields'] = query['fields'].replace('-slug', '')
+        elif 'slug' not in query['fields']:
+            query['fields'] = query['fields'] + ',slug'
+    return query
 
 def plugins(server='', **query):
     '''Retreives a list of plugins.
@@ -49,7 +63,7 @@ def plugins(server='', **query):
     Documentation.
     '''
     call = '/plugins/%s' % server
-    return json.loads(_request(call, query=query))
+    return json.loads(_request(call, query=_ensure_slug(query)))
 
 
 def plugin_details(server, plugin, version='', **query):
@@ -58,7 +72,7 @@ def plugin_details(server, plugin, version='', **query):
     specified by the API docs will work here.
     '''
     call = '/plugins/%s/%s/%s' % (server, plugin, version)
-    return json.loads(_request(call, query=query))
+    return json.loads(_request(call, query=_ensure_slug(query)))
 
 
 def plugin_download(server, plugin, version):
@@ -87,7 +101,7 @@ def author_plugins(author, server=None, **query):
         call = '/authors/%s/%s' % (server, author)
     else:
         call = '/authors/%s' % name
-    return json.loads(_request(call, query=query))
+    return json.loads(_request(call, query=_ensure_slug(query)))
 
 
 def categories():
@@ -107,7 +121,7 @@ def category_plugins(category, server=None, **query):
         call = '/categories/%s/%s' % (server, author)
     else:
         call = '/categories/%s' % name
-    return json.loads(_request(call, query=query))
+    return json.loads(_request(call, query=_ensure_slug(query)))
 
 
 def search(*filters, **query):
@@ -117,4 +131,4 @@ def search(*filters, **query):
     described in the API3 docs will work here as well.
     '''
     query['filters'] = json.dumps(filters)
-    return json.loads(_request('/search', data=query))
+    return json.loads(_request('/search', data=_ensure_slug(query)))

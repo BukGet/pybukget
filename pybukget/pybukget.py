@@ -1,4 +1,4 @@
-from pybukget.api import plugin_details, search
+from pybukget import api
 from pybukget.plugin import Plugin
 from pybukget.author import Author
 from pybukget.category import Category
@@ -29,7 +29,7 @@ def _get_best_match(to_match, possible_matches):
     lowest_distance = -1
     distances = {}
     for match in possible_matches:
-        distance = levenshtein(to_match, match)
+        distance = _levenshtein(to_match, match)
         if lowest_distance < 0 or distance < lowest_distance:
             lowest_distance = distance
         if lowest_distance == 0:
@@ -47,18 +47,19 @@ def find_slug(server, name):
     with a smiliar name. Will return None if no slug was found
     '''
     # First we are testing if the name is the same as the slug
-    if plugin_details(server, name.lower().replace(' ', '-'), fields='slug') is not None:
+    if api.plugin_details(server, name.lower().replace(' ', '-'),
+                      fields='slug') is not None:
         return name.lower().replace(' ', '-')
 
     # Then we search for a plugin with name that matches
-    search_result = search({'field': 'plugin_name', 'action': '=', 'value': 
+    search_result = api.search({'field': 'plugin_name', 'action': '=', 'value': 
                             name}, {'field': 'server', 'action': '=', 'value':
                             server}, fields='slug')
     if len(search_result) > 0:
         return search_result[0]['slug']
 
     # Then we search for a plugin with a name like it
-    search_result = search({'field': 'plugin_name', 'action': 'like', 'value':
+    search_result = api.search({'field': 'plugin_name', 'action': 'like', 'value':
                             name}, {'field': 'server', 'action': '=', 'value':
                             server}, fields='slug')
     if len(search_result) > 0:
@@ -83,7 +84,7 @@ def plugin_details(server, plugin, version='', **query):
     Optionally a specific version can be specified.  All query variables
     specified by the API docs will work here.
     '''
-    result = api.plugin_details(server, plugin, version=version, **query):
+    result = api.plugin_details(server, plugin, version=version, **query)
     return Plugin(result)
 
 def authors():

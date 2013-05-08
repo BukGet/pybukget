@@ -1,4 +1,7 @@
-from pybukget.version import Version
+try:
+    from pybukget.version import Version
+except ImportError:
+    from version import Version
 
 class Plugin(object):
     ''' An Object to hold Plugins.

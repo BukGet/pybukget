@@ -100,7 +100,7 @@ def author_plugins(author, server=None, **query):
     if server is not None:
         call = '/authors/%s/%s' % (server, author)
     else:
-        call = '/authors/%s' % name
+        call = '/authors/%s' % author
     return json.loads(_request(call, query=_ensure_slug(query)))
 
 

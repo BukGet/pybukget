@@ -10,7 +10,7 @@ class Author(object):
         for key, value in json_object.items():
             setattr(self, key, value)
     
-    def plugins(server=None, **query):
+    def plugins(self, server=None, **query):
         ''' List plugins by this author.
         This will call the author_plugins function in pybukget, and thus takes
         the same arguments except what author to list for.

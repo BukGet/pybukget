@@ -1,7 +1,13 @@
-from pybukget import api
-from pybukget.plugin import Plugin
-from pybukget.author import Author
-from pybukget.category import Category
+try:
+    from pybukget import api
+    from pybukget.plugin import Plugin
+    from pybukget.author import Author
+    from pybukget.category import Category
+except ImportError:
+    import api
+    from plugin import Plugin
+    from author import Author
+    from category import Category
 
 def _levenshtein(s1, s2):
     """ Get the levenshtein edit distance between two strings

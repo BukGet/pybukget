@@ -21,7 +21,7 @@ class Plugin(object):
             raise Exception('Missing slug in plugin!')
         self.json_object = json_object
         for key, value in json_object.items():
-            if key is 'version':
+            if key is 'versions':
                 self.versions = []
                 for version in json_object[key]:
                     self.versions.append(Version(self, version))

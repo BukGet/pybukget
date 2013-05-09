@@ -17,6 +17,8 @@ class Plugin(object):
         This will take values from the json_object and set them as attributes,
         The version value will be parsed into its own Version object
         '''
+        if not 'slug' in json_object:
+            raise Exception('Missing slug in plugin!')
         self.json_object = json_object
         for key, value in json_object.items():
             if key is 'version':
@@ -32,6 +34,9 @@ class Plugin(object):
     
     def __eq__(self, other):
         return self.slug == other.slug
+    
+    def __hash__(self):
+        return hash(self.slug)
     
     def join(self, other):
         return Plugin(self.json_object.update(other))

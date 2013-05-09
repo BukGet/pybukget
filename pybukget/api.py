@@ -45,7 +45,7 @@ def _request(url, data=None, headers={}, query={}):
 def _ensure_slug(query):
     ''' Ensure that the fields contains slug.
     '''
-    if hasattr(query, 'fields'):
+    if 'fields' in query:
         if query['fields'].startswith('-'):
             if '-slug,' in query['fields']:
                 query['fields'] = query['fields'].replace('-slug,', '')

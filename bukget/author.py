@@ -1,4 +1,4 @@
-import pybukget
+import bukget
 class Author(object):
     ''' A object to hold authors.
     Only used by author listing

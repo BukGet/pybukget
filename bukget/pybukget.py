@@ -1,8 +1,8 @@
 try:
-    from pybukget import api
-    from pybukget.plugin import Plugin
-    from pybukget.author import Author
-    from pybukget.category import Category
+    from bukget import api
+    from bukget.plugin import Plugin
+    from bukget.author import Author
+    from bukget.category import Category
 except ImportError:
     import api
     from plugin import Plugin

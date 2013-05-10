@@ -40,7 +40,7 @@ def _request(url, data=None, headers={}, query={}):
 
     # Time to set the User-Agent string and actually query the API!
     headers['User-Agent'] = USER_AGENT
-    return urlopen(Request(BASE + url, data, headers)).read().decode("utf-8")
+    return urlopen(Request(BASE + url, data, headers)).read()
 
 def _ensure_slug(query):
     ''' Ensure that the fields contains slug.
@@ -61,7 +61,7 @@ def plugins(server='', **query):
     Documentation.
     '''
     call = '/plugins/%s' % server
-    return json.loads(_request(call, query=_ensure_slug(query)))
+    return json.loads(_request(call, query=_ensure_slug(query)).decode("utf-8"))
 
 
 def plugin_details(server, plugin, version='', **query):
@@ -70,7 +70,7 @@ def plugin_details(server, plugin, version='', **query):
     specified by the API docs will work here.
     '''
     call = '/plugins/%s/%s/%s' % (server, plugin, version)
-    return json.loads(_request(call, query=_ensure_slug(query)))
+    return json.loads(_request(call, query=_ensure_slug(query)).decode("utf-8"))
 
 
 def plugin_download(server, plugin, version):
@@ -84,7 +84,7 @@ def plugin_download(server, plugin, version):
 
 def authors():
     '''Returns a list of authors and their plugin counts from the API.'''
-    return json.loads(_request('/authors'))
+    return json.loads(_request('/authors').decode("utf-8"))
 
 
 def author_plugins(author, server=None, **query):
@@ -99,12 +99,12 @@ def author_plugins(author, server=None, **query):
         call = '/authors/%s/%s' % (server, author)
     else:
         call = '/authors/%s' % author
-    return json.loads(_request(call, query=_ensure_slug(query)))
+    return json.loads(_request(call, query=_ensure_slug(query)).decode("utf-8"))
 
 
 def categories():
     '''Returns the category listing with the count of plugins for each cat.'''
-    return json.loads(_request('/categories'))
+    return json.loads(_request('/categories').decode("utf-8"))
 
 
 def category_plugins(category, server=None, **query):
@@ -119,7 +119,7 @@ def category_plugins(category, server=None, **query):
         call = '/categories/%s/%s' % (server, author)
     else:
         call = '/categories/%s' % name
-    return json.loads(_request(call, query=_ensure_slug(query)))
+    return json.loads(_request(call, query=_ensure_slug(query)).decode("utf-8"))
 
 
 def search(*filters, **query):
@@ -130,4 +130,4 @@ def search(*filters, **query):
     '''
     query['filters'] = json.dumps(filters)
     query = _ensure_slug(query)
-    return json.loads(_request('/search', data=query))
+    return json.loads(_request('/search', data=query).decode("utf-8"))

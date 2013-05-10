@@ -36,7 +36,7 @@ def _request(url, data=None, headers={}, query={}):
 
     # Lastly, if there is anything in the data variable, then urlencode it.
     if data is not None:
-        data = urlencode(data)
+        data = urlencode(data).encode('utf-8')
 
     # Time to set the User-Agent string and actually query the API!
     headers['User-Agent'] = USER_AGENT
@@ -129,4 +129,5 @@ def search(*filters, **query):
     described in the API3 docs will work here as well.
     '''
     query['filters'] = json.dumps(filters)
-    return json.loads(_request('/search', data=_ensure_slug(query)))
+    query = _ensure_slug(query)
+    return json.loads(_request('/search', data=query))

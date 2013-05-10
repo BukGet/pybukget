@@ -3,11 +3,13 @@ try:
     from bukget.plugin import Plugin
     from bukget.author import Author
     from bukget.category import Category
+    from urllib.error import HTTPError
 except ImportError:
     import api
     from plugin import Plugin
     from author import Author
     from category import Category
+    from urllib2 import HTTPError
 
 def _levenshtein(s1, s2):
     """ Get the levenshtein edit distance between two strings
@@ -53,9 +55,12 @@ def find_slug(server, name):
     with a smiliar name. Will return None if no slug was found
     '''
     # First we are testing if the name is the same as the slug
-    if api.plugin_details(server, name.lower().replace(' ', '-'),
-                      fields='slug') is not None:
-        return name.lower().replace(' ', '-')
+    try:
+        if api.plugin_details(server, name.lower().replace(' ', '-'),
+                        fields='slug') is not None:
+            return name.lower().replace(' ', '-')
+    except HTTPError:
+        pass
 
     # Then we search for a plugin with name that matches
     search_result = api.search({'field': 'plugin_name', 'action': '=', 'value': 

@@ -15,7 +15,7 @@ def _levenshtein(s1, s2):
     """ Get the levenshtein edit distance between two strings
     """
     if len(s1) < len(s2):
-        return levenshtein(s2, s1)
+        return _levenshtein(s2, s1)
     if len(s2) == 0:
         return len(s1)
     previous_row = range(len(s2) + 1)

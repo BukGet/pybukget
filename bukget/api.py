@@ -1,6 +1,11 @@
 import json
-import urllib
-import urllib2
+try:
+    from urllib import urlencode
+    from urllib2 import urlopen, Request
+except ImportError:
+    from urllib.request import urlopen, Request
+    from urllib.parse import urlencode
+    
 
 __author__ = 'Steven McGrath'
 __version__ = '1.0.0'
@@ -22,7 +27,7 @@ def _request(url, data=None, headers={}, query={}):
 
     # Here we will collapse the fields list if we see it into a string as is
     # expected by the API.
-    if 'fields' in query:
+    if 'fields' in query and ' ' in query['fields']:
         query['fields'] = ','.join(query['fields'])
 
     # Append the query to the URL if we have anything in the query dictionary.
@@ -31,12 +36,24 @@ def _request(url, data=None, headers={}, query={}):
 
     # Lastly, if there is anything in the data variable, then urlencode it.
     if data is not None:
-        data = urllib.urlencode(data)
+        data = urlencode(data).encode('utf-8')
 
     # Time to set the User-Agent string and actually query the API!
     headers['User-Agent'] = USER_AGENT
-    return urllib2.urlopen(urllib2.Request(BASE + url, data, headers)).read()
+    return urlopen(Request(BASE + url, data, headers)).read()
 
+def _ensure_slug(query):
+    ''' Ensure that the fields contains slug.
+    '''
+    if 'fields' in query:
+        if query['fields'].startswith('-'):
+            if '-slug,' in query['fields']:
+                query['fields'] = query['fields'].replace('-slug,', '')
+            elif '-slug' in query['fields']:
+                query['fields'] = query['fields'].replace('-slug', '')
+        elif 'slug' not in query['fields']:
+            query['fields'] = query['fields'] + ',slug'
+    return query
 
 def plugins(server='', **query):
     '''Retreives a list of plugins.
@@ -44,7 +61,7 @@ def plugins(server='', **query):
     Documentation.
     '''
     call = '/plugins/%s' % server
-    return json.loads(_request(call, query=query))
+    return json.loads(_request(call, query=_ensure_slug(query)).decode("utf-8"))
 
 
 def plugin_details(server, plugin, version='', **query):
@@ -53,7 +70,7 @@ def plugin_details(server, plugin, version='', **query):
     specified by the API docs will work here.
     '''
     call = '/plugins/%s/%s/%s' % (server, plugin, version)
-    return json.loads(_request(call, query=query))
+    return json.loads(_request(call, query=_ensure_slug(query)).decode("utf-8"))
 
 
 def plugin_download(server, plugin, version):
@@ -67,7 +84,7 @@ def plugin_download(server, plugin, version):
 
 def authors():
     '''Returns a list of authors and their plugin counts from the API.'''
-    return json.loads(_request('/authors'))
+    return json.loads(_request('/authors').decode("utf-8"))
 
 
 def author_plugins(author, server=None, **query):
@@ -81,13 +98,13 @@ def author_plugins(author, server=None, **query):
     if server is not None:
         call = '/authors/%s/%s' % (server, author)
     else:
-        call = '/authors/%s' % name
-    return json.loads(_request(call, query=query))
+        call = '/authors/%s' % author
+    return json.loads(_request(call, query=_ensure_slug(query)).decode("utf-8"))
 
 
 def categories():
     '''Returns the category listing with the count of plugins for each cat.'''
-    return json.loads(_request('/categories'))
+    return json.loads(_request('/categories').decode("utf-8"))
 
 
 def category_plugins(category, server=None, **query):
@@ -102,14 +119,15 @@ def category_plugins(category, server=None, **query):
         call = '/categories/%s/%s' % (server, author)
     else:
         call = '/categories/%s' % name
-    return json.loads(_request(call, query=query))
+    return json.loads(_request(call, query=_ensure_slug(query)).decode("utf-8"))
 
 
 def search(*filters, **query):
     '''Searching the API.
     This function is only utilizing the POST searching and is expecting properly
-    formatted search dictionaries.  Also all fo the same query variables as is
+    formatted search dictionaries.  Also all of the same query variables as is
     described in the API3 docs will work here as well.
     '''
     query['filters'] = json.dumps(filters)
-    return json.loads(_request('/search', data=query))
+    query = _ensure_slug(query)
+    return json.loads(_request('/search', data=query).decode("utf-8"))

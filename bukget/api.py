@@ -1,17 +1,16 @@
 import json
 try:
     from urllib import urlencode
-    from urllib2 import urlopen, Request
+    from urllib2 import urlopen, Request, HTTPError
 except ImportError:
+    from urllib.error import HTTPError
     from urllib.request import urlopen, Request
     from urllib.parse import urlencode
-    
 
-__author__ = 'Steven McGrath'
-__version__ = '1.0.0'
 
-USER_AGENT='pyBukGet 1.0'
+USER_AGENT='pyBukGet 2.0'
 BASE = 'http://api.bukget.org/3'
+
 
 def _request(url, data=None, headers={}, query={}):
     '''Base Request
@@ -27,7 +26,8 @@ def _request(url, data=None, headers={}, query={}):
 
     # Here we will collapse the fields list if we see it into a string as is
     # expected by the API.
-    if 'fields' in query and ' ' in query['fields']:
+    if 'fields' in query and (' ' in query['fields'] or\
+                              isinstance(query['fields'], list)):
         query['fields'] = ','.join(query['fields'])
 
     # Append the query to the URL if we have anything in the query dictionary.
@@ -42,18 +42,6 @@ def _request(url, data=None, headers={}, query={}):
     headers['User-Agent'] = USER_AGENT
     return urlopen(Request(BASE + url, data, headers)).read()
 
-def _ensure_slug(query):
-    ''' Ensure that the fields contains slug.
-    '''
-    if 'fields' in query:
-        if query['fields'].startswith('-'):
-            if '-slug,' in query['fields']:
-                query['fields'] = query['fields'].replace('-slug,', '')
-            elif '-slug' in query['fields']:
-                query['fields'] = query['fields'].replace('-slug', '')
-        elif 'slug' not in query['fields']:
-            query['fields'] = query['fields'] + ',slug'
-    return query
 
 def plugins(server='', **query):
     '''Retreives a list of plugins.
@@ -61,7 +49,7 @@ def plugins(server='', **query):
     Documentation.
     '''
     call = '/plugins/%s' % server
-    return json.loads(_request(call, query=_ensure_slug(query)).decode("utf-8"))
+    return json.loads(_request(call, query=query).decode("utf-8"))
 
 
 def plugin_details(server, plugin, version='', **query):
@@ -70,7 +58,7 @@ def plugin_details(server, plugin, version='', **query):
     specified by the API docs will work here.
     '''
     call = '/plugins/%s/%s/%s' % (server, plugin, version)
-    return json.loads(_request(call, query=_ensure_slug(query)).decode("utf-8"))
+    return json.loads(_request(call, query=query).decode("utf-8"))
 
 
 def plugin_download(server, plugin, version):
@@ -99,7 +87,7 @@ def author_plugins(author, server=None, **query):
         call = '/authors/%s/%s' % (server, author)
     else:
         call = '/authors/%s' % author
-    return json.loads(_request(call, query=_ensure_slug(query)).decode("utf-8"))
+    return json.loads(_request(call, query=query).decode("utf-8"))
 
 
 def categories():
@@ -119,7 +107,7 @@ def category_plugins(category, server=None, **query):
         call = '/categories/%s/%s' % (server, author)
     else:
         call = '/categories/%s' % name
-    return json.loads(_request(call, query=_ensure_slug(query)).decode("utf-8"))
+    return json.loads(_request(call, query=query).decode("utf-8"))
 
 
 def search(*filters, **query):
@@ -129,5 +117,103 @@ def search(*filters, **query):
     described in the API3 docs will work here as well.
     '''
     query['filters'] = json.dumps(filters)
-    query = _ensure_slug(query)
     return json.loads(_request('/search', data=query).decode("utf-8"))
+
+
+def _levenshtein(s1, s2):
+    """ Get the levenshtein edit distance between two strings
+    """
+    if len(s1) < len(s2):
+        return _levenshtein(s2, s1)
+    if len(s2) == 0:
+        return len(s1)
+    previous_row = range(len(s2) + 1)
+    for i, c1 in enumerate(s1):
+        current_row = [i + 1]
+        for j, c2 in enumerate(s2):
+            insertions = previous_row[
+                             j + 1] + 1
+            deletions = current_row[j] + 1
+            substitutions = previous_row[j] + (c1 != c2)
+            current_row.append(min(insertions, deletions, substitutions))
+        previous_row = current_row
+    return previous_row[-1]
+
+
+def _get_best_match(to_match, possible_matches):
+    """ Return the value in possible_matches that has the smallest edit
+    distance to to_match
+    """
+    lowest_distance = -1
+    distances = {}
+    for match in possible_matches:
+        distance = _levenshtein(to_match, match)
+        if lowest_distance < 0 or distance < lowest_distance:
+            lowest_distance = distance
+        if lowest_distance == 0:
+            break
+    for match in distances:
+        if distances[match] == lowest_distance:
+            return match
+    return None
+
+
+def find_by_name(server, name):
+    ''' Find the slug by the name supplied
+    First the name is turned all lowercase and checked if that is the slug.
+    If it is, it's returned. Else it searches for plugins with equal names and
+    chooses the first one. If no plugin has the name, it searches for a plugin
+    with a smiliar name. Will return None if no slug was found
+    '''
+    # First we are testing if the name is the same as the slug
+    try:
+        if plugin_details(server, name.lower().replace(' ', '-'),
+                          fields='slug') is not None:
+            return name.lower().replace(' ', '-')
+    except HTTPError:
+        pass
+
+    # Then we search for a plugin with name that matches
+    search_result = search({
+                'field': 'plugin_name', 
+                'action': '=', 'value': name
+            }, {
+                'field': 'server', 
+                'action': '=', 'value': server
+            }, 
+            fields='slug')
+    if len(search_result) > 0:
+        return search_result[0]['slug']
+
+    # Then we search for a plugin with a name like it
+    search_result = search({
+                'field': 'plugin_name', 
+                'action': 'like', 'value': name
+            }, {
+                'field': 'server', 
+                'action': '=', 'value': server
+            }, 
+            fields='slug')
+    if len(search_result) > 0:
+        return _get_best_match(name, [i['slug'] for i in search_result])
+    
+    #No plugin found =(
+    return None
+
+
+def get_by_main(server, main):
+    ''' 
+    Fetches the slug of the plugin based on the java class name (main)
+    '''
+    search_result = search({
+                'field': 'main', 
+                'action': '=', 'value': main
+            }, {
+                'field': 'server', 
+                'action': '=', 'value': server
+            }, 
+            fields='slug')
+    if len(search_result) > 0:
+        return search_result[0]['slug']
+    else:
+        return None

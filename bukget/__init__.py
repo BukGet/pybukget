@@ -1,6 +1,5 @@
-try:
-    from bukget.pybukget import *
-    from bukget.api import plugin_download
-except ImportError:
-    from bukget import *
-    from api import plugin_download
+import api
+import orm
+
+__author__ = 'Steven McGrath, Totokaka'
+__version__ = '2.0'

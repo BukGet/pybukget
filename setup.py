@@ -3,7 +3,7 @@ import bukget
 
 setup(
     name='pyBukGet',
-    version='1.1',
+    version='2.0',
     description='Python Module for the BukGet JSON API',
     author='Steven McGrath',
     author_email='steve@chigeek.com',

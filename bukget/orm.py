@@ -128,6 +128,7 @@ def plugins(server='', **query):
     plugins = []
     query['fields'] = ['-nonexistant',]
     result = api.plugins(server, **query)
+    if result is None: return None
     for plugin in result:
         plugins.append(Plugin(plugin))
     return plugins
@@ -139,6 +140,7 @@ def plugin_details(server, plugin, version='', **query):
     specified by the API docs will work here.
     '''
     result = api.plugin_details(server, plugin, version=version, **query)
+    if result is None: return None
     return Plugin(result)
 
 
@@ -146,6 +148,7 @@ def authors():
     '''Returns a list of authors and their plugin counts from the API.'''
     authors = []
     result = api.authors()
+    if result is None: return None
     for author in result:
         authors.append(Author(author))
     return authors
@@ -159,6 +162,7 @@ def author_plugins(author, server=None, **query):
     plugins = []
     query['fields'] = ['-nonexistant',]
     result = api.author_plugins(author, server=server, **query)
+    if result is None: return None
     for plugin in result:
         plugins.append(Plugin(plugin))
     return plugins
@@ -169,6 +173,7 @@ def categories():
     '''
     categories = []
     result = api.categories()
+    if result is None: return None
     for category in categories:
         categories.append(Category(category))
     return categories
@@ -182,6 +187,7 @@ def category_plugins(category, server=None, **query):
     plugins = []
     query['fields'] = ['-nonexistant',]
     result = api.category_plugins(category, server=server, **query)
+    if result is None: return None
     for plugin in result:
         plugins.append(Plugin(plugin))
     return plugins
@@ -196,6 +202,7 @@ def search(*filters, **query):
     plugins = []
     query['fields'] = ['-nonexistant',]
     result = api.search(*filters, **query)
+    if result is None: return None
     for plugin in result:
         plugins.append(Plugin(plugin))
     return plugins

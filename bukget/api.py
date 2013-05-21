@@ -8,11 +8,11 @@ except ImportError:
     from urllib.parse import urlencode
 
 
-USER_AGENT='pyBukGet 2.0'
+USER_AGENT='pyBukGet 2.1'
 BASE = 'http://api.bukget.org/3'
 
 
-def _request(url, data=None, headers={}, query={}):
+def _request(url, data=None, jsonify=True, headers={}, query={}):
     '''Base Request
     The parent function that all public functions call in order to initiate
     communication to the API.  Simply converts the Pythonic values into the
@@ -40,7 +40,15 @@ def _request(url, data=None, headers={}, query={}):
 
     # Time to set the User-Agent string and actually query the API!
     headers['User-Agent'] = USER_AGENT
-    return urlopen(Request(BASE + url, data, headers)).read()
+    try:
+        response = urlopen(Request(BASE + url, data, headers)).read()
+    except HTTPError:
+        return None
+    else:
+        if jsonify:
+            return json.loads(response.decode("utf-8"))
+        else:
+            return response
 
 
 def plugins(server='', **query):
@@ -49,7 +57,7 @@ def plugins(server='', **query):
     Documentation.
     '''
     call = '/plugins/%s' % server
-    return json.loads(_request(call, query=query).decode("utf-8"))
+    return _request(call, query=query)
 
 
 def plugin_details(server, plugin, version='', **query):
@@ -58,7 +66,7 @@ def plugin_details(server, plugin, version='', **query):
     specified by the API docs will work here.
     '''
     call = '/plugins/%s/%s/%s' % (server, plugin, version)
-    return json.loads(_request(call, query=query).decode("utf-8"))
+    return _request(call, query=query)
 
 
 def plugin_download(server, plugin, version):
@@ -67,12 +75,12 @@ def plugin_download(server, plugin, version):
     returning dictionaries in this case!
     '''
     call = '/plugins/%s/%s/%s/download' % (server, plugin, version)
-    return _request(call)
+    return _request(call, jsonify=False)
 
 
 def authors():
     '''Returns a list of authors and their plugin counts from the API.'''
-    return json.loads(_request('/authors').decode("utf-8"))
+    return _request('/authors')
 
 
 def author_plugins(author, server=None, **query):
@@ -87,12 +95,12 @@ def author_plugins(author, server=None, **query):
         call = '/authors/%s/%s' % (server, author)
     else:
         call = '/authors/%s' % author
-    return json.loads(_request(call, query=query).decode("utf-8"))
+    return _request(call, query=query)
 
 
 def categories():
     '''Returns the category listing with the count of plugins for each cat.'''
-    return json.loads(_request('/categories').decode("utf-8"))
+    return _request('/categories')
 
 
 def category_plugins(category, server=None, **query):
@@ -107,7 +115,7 @@ def category_plugins(category, server=None, **query):
         call = '/categories/%s/%s' % (server, author)
     else:
         call = '/categories/%s' % name
-    return json.loads(_request(call, query=query).decode("utf-8"))
+    return _request(call, query=query)
 
 
 def search(*filters, **query):
@@ -117,7 +125,7 @@ def search(*filters, **query):
     described in the API3 docs will work here as well.
     '''
     query['filters'] = json.dumps(filters)
-    return json.loads(_request('/search', data=query).decode("utf-8"))
+    return _request('/search', data=query)
 
 
 def _levenshtein(s1, s2):

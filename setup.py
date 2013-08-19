@@ -5,7 +5,7 @@ setup(
     name='pyBukGet',
     version=bukget.__version__,
     description='Python Module for the BukGet JSON API',
-    author='Steven McGrath',
+    author=bukget.__author__,
     author_email='steve@chigeek.com',
     url='https://github.com/BukGet/bukget',
     packages=['bukget'],

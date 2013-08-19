@@ -1,9 +1,9 @@
-import api
-
+from __future__ import print_function
 try:
+    import bukget.api as api
     from urllib.error import HTTPError
 except ImportError:
-    import api
+    import bukget.api as api
     from urllib2 import HTTPError
 
 
@@ -22,7 +22,7 @@ class Plugin(object):
         The version value will be parsed into its own Version object
         '''
         if not 'slug' in json_object:
-            print json_object
+            print(json_object)
             raise Exception('Missing slug in plugin!')
         self.json_object = json_object
         for key, value in json_object.items():

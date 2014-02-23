@@ -29,7 +29,7 @@ def _request(url, data=None, jsonify=True, headers={}, query={}):
     if 'fields' in query and (' ' in query['fields'] or\
                               isinstance(query['fields'], list)):
         query['fields'] = ','.join(query['fields'])
-    if 'fields' in data and (' ' in data['fields'] or\
+    if data is not None and 'fields' in data and (' ' in data['fields'] or\
                               isinstance(data['fields'], list)):
         data['fields'] = ','.join(data['fields'])
 

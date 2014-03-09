@@ -8,7 +8,7 @@ setup(
     author=bukget.__author__,
     author_email='steve@chigeek.com',
     url='https://github.com/BukGet/bukget',
-    packages=['bukget'],
+    py_modules=['bukget',],
     classifiers= [
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Information Technology',

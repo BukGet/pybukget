@@ -35,4 +35,4 @@ More detailed walkthrough is coming soon, however here are the available functio
 
 Overloadable variables:
 
-* bukget.USER_AGENT - This should be set to whatever your application is.  By default, it will report as pyBukGet 1.0.
+* bukget.USER_AGENT - This should be set to whatever your application is.  By default, it will report as pyBukGet 2.3.

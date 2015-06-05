@@ -116,9 +116,9 @@ def category_plugins(category, server=None, **query):
     # Depending on if the server variable is set, we can have one of 2
     # different URLs, so here we will set the call to the correct one.
     if server is not None:
-        call = '/categories/%s/%s' % (server, author)
+        call = '/categories/%s/%s' % (server, category)
     else:
-        call = '/categories/%s' % name
+        call = '/categories/%s' % category
     return _request(call, query=query)
 
 

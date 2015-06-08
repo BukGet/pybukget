@@ -7,8 +7,8 @@ except ImportError:
     from urllib.request import urlopen, Request
     from urllib.parse import urlencode
 
-__author__ = 'Steven McGrath, Totokaka'
-__version__ = '2.3'
+__author__ = 'Steven McGrath'
+__version__ = '2.3.1'
 USER_AGENT='pyBukGet %s' % __version__
 BASE = 'http://api.bukget.org/3'
 
